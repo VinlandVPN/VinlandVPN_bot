@@ -50,9 +50,6 @@ async def admin_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not is_admin(telegram_id):
         return
 
-    users_count = get_users_count()
-    keys_count = get_total_keys_count()
-
     for key in [
         "admin_state",
         "admin_target_user_id",
@@ -61,6 +58,9 @@ async def admin_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "admin_broadcast_mode",
     ]:
         context.user_data.pop(key, None)
+
+    users_count = get_users_count()
+    keys_count = get_total_keys_count()
 
     await update.message.reply_text(
         f"🛠 Админка\n\n"
@@ -72,6 +72,7 @@ async def admin_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def show_admin_main(update: Update):
     query = update.callback_query
+
     if not is_admin(query.from_user.id):
         return
 
@@ -89,14 +90,16 @@ async def show_admin_main(update: Update):
 
 async def show_admin_users(update: Update):
     query = update.callback_query
+
     if not is_admin(query.from_user.id):
         return
 
     users = get_users_list()
+
     if not users:
         await safe_edit(
             query,
-            "👥 Пользователей пока нет",
+            "👥 Пользователей пока нет.",
             reply_markup=get_admin_keyboard()
         )
         return
@@ -114,14 +117,16 @@ async def show_admin_users(update: Update):
 
 async def show_admin_logs(update: Update):
     query = update.callback_query
+
     if not is_admin(query.from_user.id):
         return
 
     logs = get_admin_logs(25)
+
     if not logs:
         await safe_edit(
             query,
-            "📜 Логов пока нет",
+            "📜 Логов пока нет.",
             reply_markup=get_admin_keyboard()
         )
         return
@@ -144,6 +149,7 @@ async def show_admin_logs(update: Update):
 
 async def start_admin_add_balance(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
+
     if not is_admin(query.from_user.id):
         return
 
@@ -153,13 +159,14 @@ async def start_admin_add_balance(update: Update, context: ContextTypes.DEFAULT_
     await safe_edit(
         query,
         "💰 Начисление баланса\n\n"
-        "Отправь Telegram ID пользователя, которому хочешь начислить баланс",
+        "Отправь Telegram ID пользователя, которому хочешь начислить баланс.",
         reply_markup=get_admin_back_keyboard()
     )
 
 
 async def start_admin_user_keys(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
+
     if not is_admin(query.from_user.id):
         return
 
@@ -170,7 +177,7 @@ async def start_admin_user_keys(update: Update, context: ContextTypes.DEFAULT_TY
     await safe_edit(
         query,
         "🔑 Ключи пользователя\n\n"
-        "Отправь Telegram ID пользователя, чьи ключи хочешь посмотреть",
+        "Отправь Telegram ID пользователя, чьи ключи хочешь посмотреть.",
         reply_markup=get_admin_back_keyboard()
     )
 
@@ -182,7 +189,7 @@ async def show_admin_user_keys_screen(update: Update, target_user_id: int):
     if user_info is None:
         await safe_edit(
             query,
-            "Пользователь не найден",
+            "Пользователь не найден.",
             reply_markup=get_admin_back_keyboard()
         )
         return
@@ -195,7 +202,7 @@ async def show_admin_user_keys_screen(update: Update, target_user_id: int):
             query,
             f"🔑 Ключи пользователя\n\n"
             f"{first_name} | {target_user_id} | {int(balance)}₽\n\n"
-            f"У пользователя нет ключей",
+            f"У пользователя нет ключей.",
             reply_markup=get_admin_back_keyboard()
         )
         return
@@ -216,7 +223,7 @@ async def show_admin_single_key(update: Update, key_id: int, owner_user_id: int)
     if key_info is None:
         await safe_edit(
             query,
-            "Ключ не найден",
+            "Ключ не найден.",
             reply_markup=get_admin_back_keyboard()
         )
         return
@@ -238,6 +245,7 @@ async def show_admin_single_key(update: Update, key_id: int, owner_user_id: int)
 
 async def start_admin_delete_key(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
+
     if not is_admin(query.from_user.id):
         return
 
@@ -247,13 +255,14 @@ async def start_admin_delete_key(update: Update, context: ContextTypes.DEFAULT_T
     await safe_edit(
         query,
         "🗑 Удаление ключа пользователя\n\n"
-        "Отправь Telegram ID пользователя, чей ключ хочешь удалить",
+        "Отправь Telegram ID пользователя, чей ключ хочешь удалить.",
         reply_markup=get_admin_back_keyboard()
     )
 
 
 async def start_admin_broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
+
     if not is_admin(query.from_user.id):
         return
 
@@ -264,7 +273,7 @@ async def start_admin_broadcast(update: Update, context: ContextTypes.DEFAULT_TY
     await safe_edit(
         query,
         "📢 Рассылка\n\n"
-        "Отправь текст, который нужно разослать всем пользователям",
+        "Отправь текст, который нужно разослать всем пользователям.",
         reply_markup=get_admin_back_keyboard()
     )
 
@@ -285,12 +294,12 @@ async def handle_admin_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
             target_user_id = int(text)
         except ValueError:
-            await update.message.reply_text("ID должен быть числом. Попробуй еще раз")
+            await update.message.reply_text("ID должен быть числом. Попробуй еще раз.")
             return
 
         user_info = get_user_brief(target_user_id)
         if user_info is None:
-            await update.message.reply_text("Пользователь с таким Telegram ID не найден. Попробуй еще раз")
+            await update.message.reply_text("Пользователь с таким Telegram ID не найден. Попробуй еще раз.")
             return
 
         _, first_name, balance = user_info
@@ -310,17 +319,17 @@ async def handle_admin_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
             amount = float(text.replace(",", "."))
         except ValueError:
-            await update.message.reply_text("Сумма должна быть числом. Попробуй еще раз")
+            await update.message.reply_text("Сумма должна быть числом. Попробуй еще раз.")
             return
 
         if amount <= 0:
-            await update.message.reply_text("Сумма должна быть больше 0. Попробуй еще раз")
+            await update.message.reply_text("Сумма должна быть больше 0. Попробуй еще раз.")
             return
 
         target_user_id = context.user_data.get("admin_target_user_id")
         if not target_user_id:
             context.user_data.pop("admin_state", None)
-            await update.message.reply_text("Сессия сброшена. Нажми заново «Начислить баланс»")
+            await update.message.reply_text("Сессия сброшена. Нажми заново «Начислить баланс».")
             return
 
         add_balance(target_user_id, amount)
@@ -334,7 +343,7 @@ async def handle_admin_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
         await update.message.reply_text(
-            f"✅ Баланс начислен\n\n"
+            f"✅ Баланс начислен.\n\n"
             f"Пользователь: {target_user_id}\n"
             f"Сумма: {int(amount)}₽\n"
             f"Новый баланс: {int(new_balance)}₽"
@@ -356,12 +365,12 @@ async def handle_admin_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
             target_user_id = int(text)
         except ValueError:
-            await update.message.reply_text("ID должен быть числом. Попробуй еще раз")
+            await update.message.reply_text("ID должен быть числом. Попробуй еще раз.")
             return
 
         user_info = get_user_brief(target_user_id)
         if user_info is None:
-            await update.message.reply_text("Пользователь с таким Telegram ID не найден. Попробуй еще раз")
+            await update.message.reply_text("Пользователь с таким Telegram ID не найден. Попробуй еще раз.")
             return
 
         keys = get_user_keys(target_user_id)
@@ -371,7 +380,7 @@ async def handle_admin_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         if not keys:
             await update.message.reply_text(
-                f"У пользователя {target_user_id} нет ключей",
+                f"У пользователя {target_user_id} нет ключей.",
                 reply_markup=get_admin_back_keyboard()
             )
             return
@@ -389,19 +398,17 @@ async def handle_admin_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
             target_user_id = int(text)
         except ValueError:
-            await update.message.reply_text("ID должен быть числом. Попробуй еще раз")
+            await update.message.reply_text("ID должен быть числом. Попробуй еще раз.")
             return
 
         user_info = get_user_brief(target_user_id)
         if user_info is None:
-            await update.message.reply_text("Пользователь с таким Telegram ID не найден. Попробуй еще раз")
+            await update.message.reply_text("Пользователь с таким Telegram ID не найден. Попробуй еще раз.")
             return
 
         keys = get_user_keys(target_user_id)
         if not keys:
-            await update.message.reply_text(
-                f"У пользователя {target_user_id} нет ключей"
-            )
+            await update.message.reply_text("У пользователя {target_user_id} нет ключей.")
             context.user_data.pop("admin_state", None)
             return
 
@@ -413,8 +420,7 @@ async def handle_admin_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             lines.append(
                 f"{index}) id={key_id} | {key_value} | {status} | {format_date_ru(created_at)}"
             )
-
-        lines.append("\nТеперь отправь id ключа, который нужно удалить")
+        lines.append("\nТеперь отправь id ключа, который нужно удалить.")
 
         await update.message.reply_text("\n".join(lines))
         return
@@ -423,23 +429,23 @@ async def handle_admin_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
             key_id = int(text)
         except ValueError:
-            await update.message.reply_text("ID ключа должен быть числом. Попробуй еще раз")
+            await update.message.reply_text("ID ключа должен быть числом. Попробуй еще раз.")
             return
 
         target_user_id = context.user_data.get("admin_target_user_id")
         if not target_user_id:
             context.user_data.pop("admin_state", None)
-            await update.message.reply_text("Сессия админки сброшена. Запусти /admin заново")
+            await update.message.reply_text("Сессия админки сброшена. Запусти /admin заново.")
             return
 
         key_info = get_key_by_id(key_id, target_user_id)
         if key_info is None:
-            await update.message.reply_text("Ключ с таким id у этого пользователя не найден. Попробуй еще раз")
+            await update.message.reply_text("Ключ с таким id у этого пользователя не найден. Попробуй еще раз.")
             return
 
         deleted = admin_delete_key_by_id(key_id)
         if not deleted:
-            await update.message.reply_text("Не удалось удалить ключ. Попробуй еще раз")
+            await update.message.reply_text("Не удалось удалить ключ. Попробуй еще раз.")
             return
 
         add_admin_log(
@@ -449,13 +455,13 @@ async def handle_admin_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
         await update.message.reply_text(
-            f"✅ Ключ id={key_id} удален у пользователя {target_user_id}"
+            f"✅ Ключ id={key_id} удален у пользователя {target_user_id}."
         )
 
         try:
             await context.bot.send_message(
                 chat_id=target_user_id,
-                text="🗑 Один из ваших ключей был удален администратором"
+                text="🗑 Один из ваших ключей был удален администратором."
             )
         except Exception:
             pass
@@ -469,7 +475,7 @@ async def handle_admin_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data["admin_state"] = "waiting_broadcast_mode"
 
         await update.message.reply_text(
-            "📢 Текст рассылки сохранен\n\n"
+            "📢 Текст рассылки сохранен.\n\n"
             "Теперь выбери режим рассылки:",
             reply_markup=get_broadcast_mode_keyboard()
         )
@@ -508,7 +514,7 @@ async def handle_admin_button(update: Update, context: ContextTypes.DEFAULT_TYPE
             if not target_user_id:
                 await safe_edit(
                     query,
-                    "Сессия начисления баланса сброшена. Нажми заново «Начислить баланс»",
+                    "Сессия начисления баланса сброшена. Нажми заново «Начислить баланс».",
                     reply_markup=get_admin_keyboard()
                 )
                 return True
@@ -528,7 +534,7 @@ async def handle_admin_button(update: Update, context: ContextTypes.DEFAULT_TYPE
         if not target_user_id:
             await safe_edit(
                 query,
-                "Сессия начисления баланса сброшена. Нажми заново «Начислить баланс»",
+                "Сессия начисления баланса сброшена. Нажми заново «Начислить баланс».",
                 reply_markup=get_admin_keyboard()
             )
             return True
@@ -545,7 +551,7 @@ async def handle_admin_button(update: Update, context: ContextTypes.DEFAULT_TYPE
 
         await safe_edit(
             query,
-            f"✅ Баланс начислен\n\n"
+            f"✅ Баланс начислен.\n\n"
             f"Пользователь: {target_user_id}\n"
             f"Сумма: {amount}₽\n"
             f"Новый баланс: {int(new_balance)}₽",
@@ -583,7 +589,7 @@ async def handle_admin_button(update: Update, context: ContextTypes.DEFAULT_TYPE
         if not owner_id:
             await safe_edit(
                 query,
-                "Не выбран владелец ключей. Зайди заново в раздел «Ключи пользователя»",
+                "Не выбран владелец ключей. Зайди заново в раздел «Ключи пользователя».",
                 reply_markup=get_admin_keyboard()
             )
             return True
@@ -607,7 +613,7 @@ async def handle_admin_button(update: Update, context: ContextTypes.DEFAULT_TYPE
         if not owner_id:
             await safe_edit(
                 query,
-                "Не выбран владелец ключей. Зайди заново в раздел «Ключи пользователя»",
+                "Не выбран владелец ключей. Зайди заново в раздел «Ключи пользователя».",
                 reply_markup=get_admin_keyboard()
             )
             return True
@@ -616,7 +622,7 @@ async def handle_admin_button(update: Update, context: ContextTypes.DEFAULT_TYPE
         if key_info is None:
             await safe_edit(
                 query,
-                "Ключ уже не найден",
+                "Ключ уже не найден.",
                 reply_markup=get_admin_keyboard()
             )
             return True
@@ -625,7 +631,7 @@ async def handle_admin_button(update: Update, context: ContextTypes.DEFAULT_TYPE
         if not deleted:
             await safe_edit(
                 query,
-                "Не удалось удалить ключ",
+                "Не удалось удалить ключ.",
                 reply_markup=get_admin_keyboard()
             )
             return True
@@ -639,7 +645,7 @@ async def handle_admin_button(update: Update, context: ContextTypes.DEFAULT_TYPE
         try:
             await context.bot.send_message(
                 chat_id=owner_id,
-                text="🗑 Один из ваших ключей был удален администратором"
+                text="🗑 Один из ваших ключей был удален администратором."
             )
         except Exception:
             pass
@@ -648,7 +654,7 @@ async def handle_admin_button(update: Update, context: ContextTypes.DEFAULT_TYPE
         if not keys:
             await safe_edit(
                 query,
-                f"✅ Ключ удален.\n\nУ пользователя {owner_id} больше нет ключей",
+                f"✅ Ключ удален.\n\nУ пользователя {owner_id} больше нет ключей.",
                 reply_markup=get_admin_keyboard()
             )
             return True
@@ -673,7 +679,7 @@ async def handle_admin_button(update: Update, context: ContextTypes.DEFAULT_TYPE
         if not text:
             await safe_edit(
                 query,
-                "Текст рассылки не найден. Начни заново",
+                "Текст рассылки не найден. Начни заново.",
                 reply_markup=get_admin_keyboard()
             )
             return True
@@ -691,7 +697,7 @@ async def handle_admin_button(update: Update, context: ContextTypes.DEFAULT_TYPE
         if not text:
             await safe_edit(
                 query,
-                "Текст рассылки не найден. Начни заново",
+                "Текст рассылки не найден. Начни заново.",
                 reply_markup=get_admin_keyboard()
             )
             return True
@@ -711,7 +717,7 @@ async def handle_admin_button(update: Update, context: ContextTypes.DEFAULT_TYPE
         if not text or not mode:
             await safe_edit(
                 query,
-                "Данные рассылки потеряны. Начни заново",
+                "Данные рассылки потеряны. Начни заново.",
                 reply_markup=get_admin_keyboard()
             )
             return True
