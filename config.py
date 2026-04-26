@@ -1,4 +1,10 @@
-BOT_TOKEN = "ТОКЕН"
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+
 BOT_USERNAME = "VinlandVPN_bot"
 SUPPORT_USERNAME = "Mahmadmurod"
 CHANNEL_URL = "в будущем я тут хочу чтоб был канал с инфой по впн-у"
