@@ -2,7 +2,7 @@ import sqlite3
 import random
 from datetime import datetime
 
-from config import DAILY_PRICE_PER_KEY
+from bot.config import DAILY_PRICE_PER_KEY
 
 
 def get_today_str():

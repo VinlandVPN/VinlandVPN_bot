@@ -1,8 +1,8 @@
 import asyncio
-from telegram import Bot
+from aiogram import Bot
 
-from config import BOT_TOKEN
-from db import (
+from bot.config import BOT_TOKEN
+from bot.db import (
     init_db,
     get_all_user_ids,
     apply_daily_billing,
@@ -12,7 +12,7 @@ from db import (
     set_low_balance_notified,
     set_zero_balance_notified,
 )
-from keyboards import (
+from bot.keyboards import (
     get_low_balance_notification_keyboard,
     get_zero_balance_notification_keyboard,
 )
@@ -36,8 +36,8 @@ async def process_user(bot: Bot, telegram_id: int):
                 await bot.send_message(
                     chat_id=telegram_id,
                     text=(
-                        "❌ У вас закончился баланс\n\n"
-                        "Чтобы продолжить пользоваться сервисом, пополните баланс"
+                        "❌ У вас закончился баланс.\n\n"
+                        "Чтобы продолжить пользоваться сервисом, пополните баланс."
                     ),
                     reply_markup=get_zero_balance_notification_keyboard()
                 )
@@ -53,8 +53,8 @@ async def process_user(bot: Bot, telegram_id: int):
                 await bot.send_message(
                     chat_id=telegram_id,
                     text=(
-                        f"⚠️ У вас осталось примерно {approx_days} дн. работы VPN\n\n"
-                        "Пополните баланс заранее, чтобы не потерять доступ"
+                        f"⚠️ У вас осталось примерно {approx_days} дн. работы VPN.\n\n"
+                        "Пополните баланс заранее, чтобы не потерять доступ."
                     ),
                     reply_markup=get_low_balance_notification_keyboard()
                 )
@@ -73,6 +73,8 @@ async def main():
     user_ids = get_all_user_ids()
     for telegram_id in user_ids:
         await process_user(bot, telegram_id)
+
+    await bot.session.close()
 
 
 if __name__ == "__main__":
