@@ -54,15 +54,11 @@ def is_admin(telegram_id):
 async def safe_edit(callback: CallbackQuery, text, reply_markup=None, parse_mode=None):
     try:
         await callback.message.edit_text(
-            text=text,
-            reply_markup=reply_markup,
-            parse_mode=parse_mode
+            text=text, reply_markup=reply_markup, parse_mode=parse_mode
         )
     except TelegramBadRequest:
         await callback.message.answer(
-            text=text,
-            reply_markup=reply_markup,
-            parse_mode=parse_mode
+            text=text, reply_markup=reply_markup, parse_mode=parse_mode
         )
 
 
@@ -77,10 +73,8 @@ async def admin_command(message: Message, state: FSMContext):
     keys_count = get_total_keys_count()
 
     await message.answer(
-        f"🛠 Админка\n\n"
-        f"👥 Пользователей: {users_count}\n"
-        f"🔑 Ключей: {keys_count}",
-        reply_markup=get_admin_keyboard()
+        f"🛠 Админка\n\n👥 Пользователей: {users_count}\n🔑 Ключей: {keys_count}",
+        reply_markup=get_admin_keyboard(),
     )
 
 
@@ -97,10 +91,8 @@ async def show_admin_main(callback: CallbackQuery, state: FSMContext):
 
     await safe_edit(
         callback,
-        f"🛠 Админка\n\n"
-        f"👥 Пользователей: {users_count}\n"
-        f"🔑 Ключей: {keys_count}",
-        reply_markup=get_admin_keyboard()
+        f"🛠 Админка\n\n👥 Пользователей: {users_count}\n🔑 Ключей: {keys_count}",
+        reply_markup=get_admin_keyboard(),
     )
 
 
@@ -115,9 +107,7 @@ async def show_admin_users(callback: CallbackQuery):
 
     if not users:
         await safe_edit(
-            callback,
-            "👥 Пользователей пока нет.",
-            reply_markup=get_admin_keyboard()
+            callback, "👥 Пользователей пока нет.", reply_markup=get_admin_keyboard()
         )
         return
 
@@ -125,11 +115,7 @@ async def show_admin_users(callback: CallbackQuery):
     for tg_id, first_name, balance in users:
         lines.append(f"{first_name} | {tg_id} | {int(balance)}₽")
 
-    await safe_edit(
-        callback,
-        "\n".join(lines),
-        reply_markup=get_admin_keyboard()
-    )
+    await safe_edit(callback, "\n".join(lines), reply_markup=get_admin_keyboard())
 
 
 @admin_router.callback_query(F.data == "admin_logs")
@@ -143,9 +129,7 @@ async def show_admin_logs(callback: CallbackQuery):
 
     if not logs:
         await safe_edit(
-            callback,
-            "📜 Логов пока нет.",
-            reply_markup=get_admin_keyboard()
+            callback, "📜 Логов пока нет.", reply_markup=get_admin_keyboard()
         )
         return
 
@@ -158,11 +142,7 @@ async def show_admin_logs(callback: CallbackQuery):
     if len(text) > 4000:
         text = text[:3950] + "\n\n... лог обрезан"
 
-    await safe_edit(
-        callback,
-        text,
-        reply_markup=get_admin_keyboard()
-    )
+    await safe_edit(callback, text, reply_markup=get_admin_keyboard())
 
 
 @admin_router.callback_query(F.data == "admin_add_balance")
@@ -178,7 +158,7 @@ async def start_admin_add_balance(callback: CallbackQuery, state: FSMContext):
         callback,
         "💰 Начисление баланса\n\n"
         "Отправь Telegram ID пользователя, которому хочешь начислить баланс.",
-        reply_markup=get_admin_back_keyboard()
+        reply_markup=get_admin_back_keyboard(),
     )
 
 
@@ -195,7 +175,9 @@ async def admin_receive_balance_user_id(message: Message, state: FSMContext):
 
     user_info = get_user_brief(target_user_id)
     if user_info is None:
-        await message.answer("Пользователь с таким Telegram ID не найден. Попробуй еще раз.")
+        await message.answer(
+            "Пользователь с таким Telegram ID не найден. Попробуй еще раз."
+        )
         return
 
     _, first_name, balance = user_info
@@ -207,7 +189,7 @@ async def admin_receive_balance_user_id(message: Message, state: FSMContext):
         f"Пользователь найден:\n"
         f"{first_name} | {target_user_id} | {int(balance)}₽\n\n"
         f"Теперь выбери сумму:",
-        reply_markup=get_admin_balance_amounts_keyboard()
+        reply_markup=get_admin_balance_amounts_keyboard(),
     )
 
 
@@ -226,7 +208,7 @@ async def admin_add_balance_amount(callback: CallbackQuery, state: FSMContext):
         await safe_edit(
             callback,
             "Сессия начисления баланса сброшена. Нажми заново «Начислить баланс».",
-            reply_markup=get_admin_keyboard()
+            reply_markup=get_admin_keyboard(),
         )
         await state.clear()
         return
@@ -238,7 +220,7 @@ async def admin_add_balance_amount(callback: CallbackQuery, state: FSMContext):
             f"💰 Начисление баланса\n\n"
             f"Пользователь: {target_user_id}\n\n"
             f"Введи сумму вручную:",
-            reply_markup=get_admin_back_keyboard()
+            reply_markup=get_admin_back_keyboard(),
         )
         return
 
@@ -251,7 +233,7 @@ async def admin_add_balance_amount(callback: CallbackQuery, state: FSMContext):
     add_admin_log(
         callback.from_user.id,
         "add_balance_button",
-        f"user={target_user_id}, amount={amount}"
+        f"user={target_user_id}, amount={amount}",
     )
 
     await safe_edit(
@@ -260,13 +242,13 @@ async def admin_add_balance_amount(callback: CallbackQuery, state: FSMContext):
         f"Пользователь: {target_user_id}\n"
         f"Сумма: {amount}₽\n"
         f"Новый баланс: {int(new_balance)}₽",
-        reply_markup=get_admin_keyboard()
+        reply_markup=get_admin_keyboard(),
     )
 
     try:
         await callback.bot.send_message(
             chat_id=target_user_id,
-            text=f"💰 Вам начислен баланс: {amount}₽\nТекущий баланс: {int(new_balance)}₽"
+            text=f"💰 Вам начислен баланс: {amount}₽\nТекущий баланс: {int(new_balance)}₽",
         )
     except Exception:
         pass
@@ -304,7 +286,7 @@ async def admin_receive_custom_balance(message: Message, state: FSMContext):
     add_admin_log(
         message.from_user.id,
         "add_balance_custom",
-        f"user={target_user_id}, amount={amount}"
+        f"user={target_user_id}, amount={amount}",
     )
 
     await message.answer(
@@ -317,7 +299,7 @@ async def admin_receive_custom_balance(message: Message, state: FSMContext):
     try:
         await message.bot.send_message(
             chat_id=target_user_id,
-            text=f"💰 Вам начислен баланс: {int(amount)}₽\nТекущий баланс: {int(new_balance)}₽"
+            text=f"💰 Вам начислен баланс: {int(amount)}₽\nТекущий баланс: {int(new_balance)}₽",
         )
     except Exception:
         pass
@@ -338,7 +320,7 @@ async def start_admin_user_keys(callback: CallbackQuery, state: FSMContext):
         callback,
         "🔑 Ключи пользователя\n\n"
         "Отправь Telegram ID пользователя, чьи ключи хочешь посмотреть.",
-        reply_markup=get_admin_back_keyboard()
+        reply_markup=get_admin_back_keyboard(),
     )
 
 
@@ -355,7 +337,9 @@ async def admin_receive_keys_user_id(message: Message, state: FSMContext):
 
     user_info = get_user_brief(target_user_id)
     if user_info is None:
-        await message.answer("Пользователь с таким Telegram ID не найден. Попробуй еще раз.")
+        await message.answer(
+            "Пользователь с таким Telegram ID не найден. Попробуй еще раз."
+        )
         return
 
     keys = get_user_keys(target_user_id)
@@ -364,7 +348,7 @@ async def admin_receive_keys_user_id(message: Message, state: FSMContext):
     if not keys:
         await message.answer(
             f"У пользователя {target_user_id} нет ключей.",
-            reply_markup=get_admin_back_keyboard()
+            reply_markup=get_admin_back_keyboard(),
         )
         await state.clear()
         return
@@ -375,17 +359,21 @@ async def admin_receive_keys_user_id(message: Message, state: FSMContext):
         f"🔑 Ключи пользователя\n\n"
         f"{first_name} | {target_user_id} | {int(balance)}₽\n\n"
         f"Выбери нужный ключ:",
-        reply_markup=get_admin_user_keys_keyboard(keys)
+        reply_markup=get_admin_user_keys_keyboard(keys),
     )
 
     await state.clear()
 
 
-async def show_admin_user_keys_screen(callback: CallbackQuery, owner_id: int, state: FSMContext):
+async def show_admin_user_keys_screen(
+    callback: CallbackQuery, owner_id: int, state: FSMContext
+):
     user_info = get_user_brief(owner_id)
 
     if user_info is None:
-        await safe_edit(callback, "Пользователь не найден.", reply_markup=get_admin_back_keyboard())
+        await safe_edit(
+            callback, "Пользователь не найден.", reply_markup=get_admin_back_keyboard()
+        )
         return
 
     _, first_name, balance = user_info
@@ -397,7 +385,7 @@ async def show_admin_user_keys_screen(callback: CallbackQuery, owner_id: int, st
             f"🔑 Ключи пользователя\n\n"
             f"{first_name} | {owner_id} | {int(balance)}₽\n\n"
             f"У пользователя нет ключей.",
-            reply_markup=get_admin_back_keyboard()
+            reply_markup=get_admin_back_keyboard(),
         )
         return
 
@@ -408,7 +396,7 @@ async def show_admin_user_keys_screen(callback: CallbackQuery, owner_id: int, st
         f"🔑 Ключи пользователя\n\n"
         f"{first_name} | {owner_id} | {int(balance)}₽\n\n"
         f"Выбери нужный ключ:",
-        reply_markup=get_admin_user_keys_keyboard(keys)
+        reply_markup=get_admin_user_keys_keyboard(keys),
     )
 
 
@@ -425,7 +413,9 @@ async def admin_user_keys_back(callback: CallbackQuery, state: FSMContext):
     if owner_id:
         await show_admin_user_keys_screen(callback, owner_id, state)
     else:
-        await safe_edit(callback, "Владелец ключей не выбран.", reply_markup=get_admin_keyboard())
+        await safe_edit(
+            callback, "Владелец ключей не выбран.", reply_markup=get_admin_keyboard()
+        )
 
 
 @admin_router.callback_query(F.data.startswith("admin_key_select_"))
@@ -443,14 +433,16 @@ async def admin_key_select(callback: CallbackQuery, state: FSMContext):
         await safe_edit(
             callback,
             "Не выбран владелец ключей. Зайди заново в раздел «Ключи пользователя».",
-            reply_markup=get_admin_keyboard()
+            reply_markup=get_admin_keyboard(),
         )
         return
 
     key_info = get_key_by_id(key_id, owner_id)
 
     if key_info is None:
-        await safe_edit(callback, "Ключ не найден.", reply_markup=get_admin_back_keyboard())
+        await safe_edit(
+            callback, "Ключ не найден.", reply_markup=get_admin_back_keyboard()
+        )
         return
 
     key_value, created_at, status = key_info
@@ -464,7 +456,7 @@ async def admin_key_select(callback: CallbackQuery, state: FSMContext):
         f"Ключ: {key_value}\n"
         f"Статус: {status_text}\n"
         f"Создан: {created_at_ru}",
-        reply_markup=get_admin_single_key_keyboard(key_id)
+        reply_markup=get_admin_single_key_keyboard(key_id),
     )
 
 
@@ -480,7 +472,7 @@ async def admin_key_ask_delete(callback: CallbackQuery):
     await safe_edit(
         callback,
         "⚠️ Подтверждение удаления\n\nТы точно хочешь удалить этот ключ?",
-        reply_markup=get_admin_delete_confirm_keyboard(key_id)
+        reply_markup=get_admin_delete_confirm_keyboard(key_id),
     )
 
 
@@ -499,30 +491,31 @@ async def admin_key_confirm_delete(callback: CallbackQuery, state: FSMContext):
         await safe_edit(
             callback,
             "Не выбран владелец ключей. Зайди заново в раздел «Ключи пользователя».",
-            reply_markup=get_admin_keyboard()
+            reply_markup=get_admin_keyboard(),
         )
         return
 
     key_info = get_key_by_id(key_id, owner_id)
     if key_info is None:
-        await safe_edit(callback, "Ключ уже не найден.", reply_markup=get_admin_keyboard())
+        await safe_edit(
+            callback, "Ключ уже не найден.", reply_markup=get_admin_keyboard()
+        )
         return
 
     deleted = admin_delete_key_by_id(key_id)
     if not deleted:
-        await safe_edit(callback, "Не удалось удалить ключ.", reply_markup=get_admin_keyboard())
+        await safe_edit(
+            callback, "Не удалось удалить ключ.", reply_markup=get_admin_keyboard()
+        )
         return
 
     add_admin_log(
-        callback.from_user.id,
-        "delete_key_button",
-        f"user={owner_id}, key_id={key_id}"
+        callback.from_user.id, "delete_key_button", f"user={owner_id}, key_id={key_id}"
     )
 
     try:
         await callback.bot.send_message(
-            chat_id=owner_id,
-            text="🗑 Один из ваших ключей был удален администратором."
+            chat_id=owner_id, text="🗑 Один из ваших ключей был удален администратором."
         )
     except Exception:
         pass
@@ -533,14 +526,14 @@ async def admin_key_confirm_delete(callback: CallbackQuery, state: FSMContext):
         await safe_edit(
             callback,
             f"✅ Ключ удален.\n\nУ пользователя {owner_id} больше нет ключей.",
-            reply_markup=get_admin_keyboard()
+            reply_markup=get_admin_keyboard(),
         )
         return
 
     await safe_edit(
         callback,
         f"✅ Ключ удален.\n\nОставшиеся ключи пользователя {owner_id}:",
-        reply_markup=get_admin_user_keys_keyboard(keys)
+        reply_markup=get_admin_user_keys_keyboard(keys),
     )
 
 
@@ -557,7 +550,7 @@ async def start_admin_delete_key(callback: CallbackQuery, state: FSMContext):
         callback,
         "🗑 Удаление ключа пользователя\n\n"
         "Отправь Telegram ID пользователя, чей ключ хочешь удалить.",
-        reply_markup=get_admin_back_keyboard()
+        reply_markup=get_admin_back_keyboard(),
     )
 
 
@@ -574,7 +567,9 @@ async def admin_receive_delete_key_user_id(message: Message, state: FSMContext):
 
     user_info = get_user_brief(target_user_id)
     if user_info is None:
-        await message.answer("Пользователь с таким Telegram ID не найден. Попробуй еще раз.")
+        await message.answer(
+            "Пользователь с таким Telegram ID не найден. Попробуй еще раз."
+        )
         return
 
     keys = get_user_keys(target_user_id)
@@ -588,7 +583,9 @@ async def admin_receive_delete_key_user_id(message: Message, state: FSMContext):
 
     lines = [f"🗑 Ключи пользователя {target_user_id}:\n"]
     for index, (key_id, key_value, created_at, status) in enumerate(keys, start=1):
-        lines.append(f"{index}) id={key_id} | {key_value} | {status} | {format_date_ru(created_at)}")
+        lines.append(
+            f"{index}) id={key_id} | {key_value} | {status} | {format_date_ru(created_at)}"
+        )
 
     lines.append("\nТеперь отправь id ключа, который нужно удалить.")
 
@@ -616,7 +613,9 @@ async def admin_receive_delete_key_id(message: Message, state: FSMContext):
 
     key_info = get_key_by_id(key_id, target_user_id)
     if key_info is None:
-        await message.answer("Ключ с таким id у этого пользователя не найден. Попробуй еще раз.")
+        await message.answer(
+            "Ключ с таким id у этого пользователя не найден. Попробуй еще раз."
+        )
         return
 
     deleted = admin_delete_key_by_id(key_id)
@@ -627,7 +626,7 @@ async def admin_receive_delete_key_id(message: Message, state: FSMContext):
     add_admin_log(
         message.from_user.id,
         "delete_key_manual_text",
-        f"user={target_user_id}, key_id={key_id}"
+        f"user={target_user_id}, key_id={key_id}",
     )
 
     await message.answer(f"✅ Ключ id={key_id} удален у пользователя {target_user_id}.")
@@ -635,7 +634,7 @@ async def admin_receive_delete_key_id(message: Message, state: FSMContext):
     try:
         await message.bot.send_message(
             chat_id=target_user_id,
-            text="🗑 Один из ваших ключей был удален администратором."
+            text="🗑 Один из ваших ключей был удален администратором.",
         )
     except Exception:
         pass
@@ -654,9 +653,8 @@ async def start_admin_broadcast(callback: CallbackQuery, state: FSMContext):
 
     await safe_edit(
         callback,
-        "📢 Рассылка\n\n"
-        "Отправь текст, который нужно разослать всем пользователям.",
-        reply_markup=get_admin_back_keyboard()
+        "📢 Рассылка\n\nОтправь текст, который нужно разослать всем пользователям.",
+        reply_markup=get_admin_back_keyboard(),
     )
 
 
@@ -670,9 +668,8 @@ async def admin_receive_broadcast_text(message: Message, state: FSMContext):
     await state.update_data(admin_broadcast_text=text)
 
     await message.answer(
-        "📢 Текст рассылки сохранен.\n\n"
-        "Теперь выбери режим рассылки:",
-        reply_markup=get_broadcast_mode_keyboard()
+        "📢 Текст рассылки сохранен.\n\nТеперь выбери режим рассылки:",
+        reply_markup=get_broadcast_mode_keyboard(),
     )
 
 
@@ -687,7 +684,11 @@ async def admin_broadcast_send_plain(callback: CallbackQuery, state: FSMContext)
     text = data.get("admin_broadcast_text")
 
     if not text:
-        await safe_edit(callback, "Текст рассылки не найден. Начни заново.", reply_markup=get_admin_keyboard())
+        await safe_edit(
+            callback,
+            "Текст рассылки не найден. Начни заново.",
+            reply_markup=get_admin_keyboard(),
+        )
         await state.clear()
         return
 
@@ -696,7 +697,7 @@ async def admin_broadcast_send_plain(callback: CallbackQuery, state: FSMContext)
     await safe_edit(
         callback,
         f"📢 Предпросмотр рассылки\n\n{text}",
-        reply_markup=get_broadcast_preview_plain_keyboard()
+        reply_markup=get_broadcast_preview_plain_keyboard(),
     )
 
 
@@ -711,7 +712,11 @@ async def admin_broadcast_send_buttons(callback: CallbackQuery, state: FSMContex
     text = data.get("admin_broadcast_text")
 
     if not text:
-        await safe_edit(callback, "Текст рассылки не найден. Начни заново.", reply_markup=get_admin_keyboard())
+        await safe_edit(
+            callback,
+            "Текст рассылки не найден. Начни заново.",
+            reply_markup=get_admin_keyboard(),
+        )
         await state.clear()
         return
 
@@ -720,7 +725,7 @@ async def admin_broadcast_send_buttons(callback: CallbackQuery, state: FSMContex
     await safe_edit(
         callback,
         f"📢 Предпросмотр рассылки\n\n{text}",
-        reply_markup=get_broadcast_preview_buttons_keyboard(CHANNEL_URL)
+        reply_markup=get_broadcast_preview_buttons_keyboard(CHANNEL_URL),
     )
 
 
@@ -736,7 +741,11 @@ async def admin_broadcast_confirm_send(callback: CallbackQuery, state: FSMContex
     mode = data.get("admin_broadcast_mode")
 
     if not text or not mode:
-        await safe_edit(callback, "Данные рассылки потеряны. Начни заново.", reply_markup=get_admin_keyboard())
+        await safe_edit(
+            callback,
+            "Данные рассылки потеряны. Начни заново.",
+            reply_markup=get_admin_keyboard(),
+        )
         await state.clear()
         return
 
@@ -752,7 +761,7 @@ async def admin_broadcast_confirm_send(callback: CallbackQuery, state: FSMContex
                 await callback.bot.send_message(
                     chat_id=user_id,
                     text=text,
-                    reply_markup=get_broadcast_user_keyboard(CHANNEL_URL)
+                    reply_markup=get_broadcast_user_keyboard(CHANNEL_URL),
                 )
             sent_count += 1
         except Exception:
@@ -760,9 +769,7 @@ async def admin_broadcast_confirm_send(callback: CallbackQuery, state: FSMContex
 
     action = "broadcast_plain" if mode == "plain" else "broadcast_with_buttons"
     add_admin_log(
-        callback.from_user.id,
-        action,
-        f"sent={sent_count}, failed={failed_count}"
+        callback.from_user.id, action, f"sent={sent_count}, failed={failed_count}"
     )
 
     await safe_edit(
@@ -770,7 +777,7 @@ async def admin_broadcast_confirm_send(callback: CallbackQuery, state: FSMContex
         f"📢 Рассылка завершена.\n\n"
         f"✅ Отправлено: {sent_count}\n"
         f"❌ Не удалось: {failed_count}",
-        reply_markup=get_admin_keyboard()
+        reply_markup=get_admin_keyboard(),
     )
 
     await state.clear()

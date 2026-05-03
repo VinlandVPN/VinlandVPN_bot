@@ -40,15 +40,11 @@ user_router = Router()
 async def safe_edit(callback: CallbackQuery, text, reply_markup=None, parse_mode=None):
     try:
         await callback.message.edit_text(
-            text=text,
-            reply_markup=reply_markup,
-            parse_mode=parse_mode
+            text=text, reply_markup=reply_markup, parse_mode=parse_mode
         )
     except TelegramBadRequest:
         await callback.message.answer(
-            text=text,
-            reply_markup=reply_markup,
-            parse_mode=parse_mode
+            text=text, reply_markup=reply_markup, parse_mode=parse_mode
         )
 
 
@@ -76,7 +72,7 @@ async def process_referral_bonus(telegram_id, bot):
             text=(
                 f"🎁 Вам начислен реферальный бонус: {REFERRAL_BONUS}₽\n"
                 f"Пригласивший вас пользователь тоже получил {REFERRAL_BONUS}₽."
-            )
+            ),
         )
     except Exception:
         pass
@@ -87,7 +83,7 @@ async def process_referral_bonus(telegram_id, bot):
             text=(
                 f"🎁 Вам начислен реферальный бонус: {REFERRAL_BONUS}₽\n"
                 f"Ваш приглашенный пользователь впервые пополнил баланс."
-            )
+            ),
         )
     except Exception:
         pass
@@ -115,9 +111,15 @@ async def start(message: Message, command: CommandObject):
 
     real_balance = get_user_balance(telegram_id)
     _, active_keys, _, approx_days = get_total_keys_info(telegram_id)
-    status = "аккаунт работает" if active_keys > 0 and real_balance > 0 else "аккаунт не активен"
+    status = (
+        "аккаунт работает"
+        if active_keys > 0 and real_balance > 0
+        else "аккаунт не активен"
+    )
 
-    greeting = f"Рады видеть вас, {name}!" if is_new else f"Рады видеть вас снова, {name}!"
+    greeting = (
+        f"Рады видеть вас, {name}!" if is_new else f"Рады видеть вас снова, {name}!"
+    )
 
     await message.answer(
         f"{greeting}\n\n"
@@ -126,15 +128,13 @@ async def start(message: Message, command: CommandObject):
         f"Срок уменьшается ежедневно\n\n"
         f"👥 Пригласите друзей — когда друг пополнит баланс от 100₽, вы оба получите по 30₽!\n\n"
         f"📣 Обязательно подпишитесь на наш канал (скоро появится)",
-        reply_markup=get_main_cabinet_keyboard()
+        reply_markup=get_main_cabinet_keyboard(),
     )
 
 
 @user_router.message(Command("help"))
 async def help_command(message: Message):
-    await message.answer(
-        "Команды:\n/start — запустить бота\n/help — помощь"
-    )
+    await message.answer("Команды:\n/start — запустить бота\n/help — помощь")
 
 
 async def render_keys_menu(callback: CallbackQuery, telegram_id, selected_key_id=None):
@@ -146,7 +146,7 @@ async def render_keys_menu(callback: CallbackQuery, telegram_id, selected_key_id
         "🔑 Ваши ключи:\n\n"
         "ℹ️ Каждый ключ = 100₽ / 30 дней\n\n"
         "⇩ Нажмите, чтобы получить или изменить!⇩",
-        reply_markup=get_keys_menu(user_keys, selected_key_id)
+        reply_markup=get_keys_menu(user_keys, selected_key_id),
     )
 
 
@@ -168,7 +168,7 @@ async def show_balance(callback: CallbackQuery):
         f"✅ Активных ключей: {active_keys}\n"
         f"⏳ Остаток: ~{approx_days} дней\n\n"
         f"Тариф: 100₽ / 30 дней за 1 ключ",
-        reply_markup=get_main_cabinet_keyboard()
+        reply_markup=get_main_cabinet_keyboard(),
     )
 
 
@@ -186,7 +186,7 @@ async def show_invite(callback: CallbackQuery):
         "Если новый пользователь придет по ней и впервые пополнит баланс от 100₽,\n"
         "вы оба получите по 30₽.\n\n"
         f"Ваша ссылка:\n{invite_link}",
-        reply_markup=get_main_cabinet_keyboard()
+        reply_markup=get_main_cabinet_keyboard(),
     )
 
 
@@ -197,7 +197,7 @@ async def show_topup(callback: CallbackQuery):
     await safe_edit(
         callback,
         "💳 Пополнение баланса\n\nВыберите сумму пополнения:",
-        reply_markup=money_inline_keyboard()
+        reply_markup=money_inline_keyboard(),
     )
 
 
@@ -237,7 +237,7 @@ async def show_support(callback: CallbackQuery):
         callback,
         "🛟 Поддержка\n\n"
         "Если есть проблемы с подключением, ключом или балансом — напишите нам.",
-        reply_markup=get_support_menu(SUPPORT_USERNAME)
+        reply_markup=get_support_menu(SUPPORT_USERNAME),
     )
 
 
@@ -260,9 +260,7 @@ async def main_menu(callback: CallbackQuery):
     await callback.answer()
 
     await safe_edit(
-        callback,
-        "🏠 Главное меню",
-        reply_markup=get_main_cabinet_keyboard()
+        callback, "🏠 Главное меню", reply_markup=get_main_cabinet_keyboard()
     )
 
 
@@ -310,7 +308,7 @@ async def connect_key(callback: CallbackQuery):
             callback,
             "⚠️ Этот ключ сейчас остановлен из-за нулевого баланса.\n\n"
             "Пополните баланс, и ключ снова станет активным.",
-            reply_markup=get_after_topup_keyboard()
+            reply_markup=get_after_topup_keyboard(),
         )
         return
 
@@ -320,7 +318,7 @@ async def connect_key(callback: CallbackQuery):
         "Скопируйте ключ ниже и вставьте его в приложение VPN:\n\n"
         f"`{key_value}`",
         reply_markup=get_connect_key_menu(),
-        parse_mode="Markdown"
+        parse_mode="Markdown",
     )
 
 
@@ -332,9 +330,8 @@ async def ask_delete_key(callback: CallbackQuery):
 
     await safe_edit(
         callback,
-        "⚠️ Подтверждение удаления\n\n"
-        "Ты точно хочешь удалить этот ключ?",
-        reply_markup=get_user_delete_confirm_keyboard(key_id)
+        "⚠️ Подтверждение удаления\n\nТы точно хочешь удалить этот ключ?",
+        reply_markup=get_user_delete_confirm_keyboard(key_id),
     )
 
 
@@ -368,5 +365,5 @@ async def replace_key(callback: CallbackQuery):
         "🌍 Ключ изменен\n\n"
         f"🔑 Новый ключ:\n{new_key}\n\n"
         "Скопируйте его и вставьте в приложение VPN.",
-        reply_markup=get_connect_key_menu()
+        reply_markup=get_connect_key_menu(),
     )

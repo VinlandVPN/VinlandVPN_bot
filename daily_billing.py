@@ -39,7 +39,7 @@ async def process_user(bot: Bot, telegram_id: int):
                         "❌ У вас закончился баланс.\n\n"
                         "Чтобы продолжить пользоваться сервисом, пополните баланс."
                     ),
-                    reply_markup=get_zero_balance_notification_keyboard()
+                    reply_markup=get_zero_balance_notification_keyboard(),
                 )
                 set_zero_balance_notified(telegram_id, 1)
                 set_low_balance_notified(telegram_id, 1)
@@ -56,7 +56,7 @@ async def process_user(bot: Bot, telegram_id: int):
                         f"⚠️ У вас осталось примерно {approx_days} дн. работы VPN.\n\n"
                         "Пополните баланс заранее, чтобы не потерять доступ."
                     ),
-                    reply_markup=get_low_balance_notification_keyboard()
+                    reply_markup=get_low_balance_notification_keyboard(),
                 )
                 set_low_balance_notified(telegram_id, 1)
             except Exception:

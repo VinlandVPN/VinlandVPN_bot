@@ -61,12 +61,8 @@ def init_db():
     )
     """)
 
-    ensure_column_exists(
-        cursor, "users", "zero_balance_notified", "INTEGER DEFAULT 0"
-    )
-    ensure_column_exists(
-        cursor, "users", "low_balance_notified", "INTEGER DEFAULT 0"
-    )
+    ensure_column_exists(cursor, "users", "zero_balance_notified", "INTEGER DEFAULT 0")
+    ensure_column_exists(cursor, "users", "low_balance_notified", "INTEGER DEFAULT 0")
 
     conn.commit()
     conn.close()
@@ -81,7 +77,7 @@ def add_admin_log(admin_id, action, details=""):
         INSERT INTO admin_logs (admin_id, action, details, created_at)
         VALUES (?, ?, ?, ?)
         """,
-        (admin_id, action, details, get_now_str())
+        (admin_id, action, details, get_now_str()),
     )
 
     conn.commit()
@@ -99,7 +95,7 @@ def get_admin_logs(limit=30):
         ORDER BY id DESC
         LIMIT ?
         """,
-        (limit,)
+        (limit,),
     )
     rows = cursor.fetchall()
 
@@ -112,8 +108,7 @@ def save_user(telegram_id, first_name, referrer_id=None):
     cursor = conn.cursor()
 
     cursor.execute(
-        "SELECT telegram_id FROM users WHERE telegram_id = ?",
-        (telegram_id,)
+        "SELECT telegram_id FROM users WHERE telegram_id = ?", (telegram_id,)
     )
     exists = cursor.fetchone()
     is_new = exists is None
@@ -128,7 +123,7 @@ def save_user(telegram_id, first_name, referrer_id=None):
             )
             VALUES (?, ?, 0, ?, 0, ?, 0, 0)
             """,
-            (telegram_id, first_name, referrer_id, get_today_str())
+            (telegram_id, first_name, referrer_id, get_today_str()),
         )
 
     conn.commit()
@@ -152,8 +147,7 @@ def get_user_referrer(telegram_id):
     cursor = conn.cursor()
 
     cursor.execute(
-        "SELECT referrer_id FROM users WHERE telegram_id = ?",
-        (telegram_id,)
+        "SELECT referrer_id FROM users WHERE telegram_id = ?", (telegram_id,)
     )
     result = cursor.fetchone()
 
@@ -166,8 +160,7 @@ def was_referral_bonus_given(telegram_id):
     cursor = conn.cursor()
 
     cursor.execute(
-        "SELECT referral_bonus_given FROM users WHERE telegram_id = ?",
-        (telegram_id,)
+        "SELECT referral_bonus_given FROM users WHERE telegram_id = ?", (telegram_id,)
     )
     result = cursor.fetchone()
 
@@ -181,7 +174,7 @@ def mark_referral_bonus_given(telegram_id):
 
     cursor.execute(
         "UPDATE users SET referral_bonus_given = 1 WHERE telegram_id = ?",
-        (telegram_id,)
+        (telegram_id,),
     )
 
     conn.commit()
@@ -192,10 +185,7 @@ def get_user_balance(telegram_id):
     conn = sqlite3.connect("bot.db")
     cursor = conn.cursor()
 
-    cursor.execute(
-        "SELECT balance FROM users WHERE telegram_id = ?",
-        (telegram_id,)
-    )
+    cursor.execute("SELECT balance FROM users WHERE telegram_id = ?", (telegram_id,))
     result = cursor.fetchone()
 
     conn.close()
@@ -214,7 +204,7 @@ def add_balance(telegram_id, amount):
             zero_balance_notified = 0
         WHERE telegram_id = ?
         """,
-        (amount, telegram_id)
+        (amount, telegram_id),
     )
 
     conn.commit()
@@ -254,7 +244,7 @@ def get_users_list(limit=20):
         ORDER BY id DESC
         LIMIT ?
         """,
-        (limit,)
+        (limit,),
     )
     users = cursor.fetchall()
 
@@ -272,7 +262,7 @@ def get_user_brief(telegram_id):
         FROM users
         WHERE telegram_id = ?
         """,
-        (telegram_id,)
+        (telegram_id,),
     )
     result = cursor.fetchone()
 
@@ -285,8 +275,7 @@ def get_last_billing_date(telegram_id):
     cursor = conn.cursor()
 
     cursor.execute(
-        "SELECT last_billing_date FROM users WHERE telegram_id = ?",
-        (telegram_id,)
+        "SELECT last_billing_date FROM users WHERE telegram_id = ?", (telegram_id,)
     )
     result = cursor.fetchone()
 
@@ -300,7 +289,7 @@ def set_last_billing_date(telegram_id, date_str):
 
     cursor.execute(
         "UPDATE users SET last_billing_date = ? WHERE telegram_id = ?",
-        (date_str, telegram_id)
+        (date_str, telegram_id),
     )
 
     conn.commit()
@@ -317,7 +306,7 @@ def get_notification_flags(telegram_id):
         FROM users
         WHERE telegram_id = ?
         """,
-        (telegram_id,)
+        (telegram_id,),
     )
     result = cursor.fetchone()
 
@@ -335,7 +324,7 @@ def set_low_balance_notified(telegram_id, value: int):
 
     cursor.execute(
         "UPDATE users SET low_balance_notified = ? WHERE telegram_id = ?",
-        (value, telegram_id)
+        (value, telegram_id),
     )
 
     conn.commit()
@@ -348,7 +337,7 @@ def set_zero_balance_notified(telegram_id, value: int):
 
     cursor.execute(
         "UPDATE users SET zero_balance_notified = ? WHERE telegram_id = ?",
-        (value, telegram_id)
+        (value, telegram_id),
     )
 
     conn.commit()
@@ -368,7 +357,7 @@ def create_vpn_key(telegram_id):
         INSERT INTO vpn_keys (user_id, key, created_at, is_deleted, status)
         VALUES (?, ?, ?, 0, ?)
         """,
-        (telegram_id, key, get_today_str(), status)
+        (telegram_id, key, get_today_str(), status),
     )
 
     conn.commit()
@@ -387,7 +376,7 @@ def get_user_keys(telegram_id):
         WHERE user_id = ? AND is_deleted = 0
         ORDER BY id ASC
         """,
-        (telegram_id,)
+        (telegram_id,),
     )
     keys = cursor.fetchall()
 
@@ -405,7 +394,7 @@ def get_key_by_id(key_id, telegram_id):
         FROM vpn_keys
         WHERE id = ? AND user_id = ? AND is_deleted = 0
         """,
-        (key_id, telegram_id)
+        (key_id, telegram_id),
     )
     result = cursor.fetchone()
 
@@ -423,7 +412,7 @@ def delete_key_by_id(key_id, telegram_id):
         SET is_deleted = 1
         WHERE id = ? AND user_id = ? AND is_deleted = 0
         """,
-        (key_id, telegram_id)
+        (key_id, telegram_id),
     )
 
     conn.commit()
@@ -443,7 +432,7 @@ def admin_delete_key_by_id(key_id):
         SET is_deleted = 1
         WHERE id = ? AND is_deleted = 0
         """,
-        (key_id,)
+        (key_id,),
     )
 
     conn.commit()
@@ -463,7 +452,7 @@ def get_active_keys_count(telegram_id):
         FROM vpn_keys
         WHERE user_id = ? AND is_deleted = 0 AND status = 'active'
         """,
-        (telegram_id,)
+        (telegram_id,),
     )
     count = cursor.fetchone()[0]
 
@@ -481,7 +470,7 @@ def pause_user_keys(telegram_id):
         SET status = 'paused'
         WHERE user_id = ? AND is_deleted = 0
         """,
-        (telegram_id,)
+        (telegram_id,),
     )
 
     conn.commit()
@@ -498,7 +487,7 @@ def activate_user_keys(telegram_id):
         SET status = 'active'
         WHERE user_id = ? AND is_deleted = 0
         """,
-        (telegram_id,)
+        (telegram_id,),
     )
 
     conn.commit()
@@ -524,10 +513,7 @@ def apply_daily_billing(telegram_id):
     conn = sqlite3.connect("bot.db")
     cursor = conn.cursor()
 
-    cursor.execute(
-        "SELECT balance FROM users WHERE telegram_id = ?",
-        (telegram_id,)
-    )
+    cursor.execute("SELECT balance FROM users WHERE telegram_id = ?", (telegram_id,))
     result = cursor.fetchone()
     current_balance = float(result[0]) if result else 0.0
 
@@ -537,7 +523,7 @@ def apply_daily_billing(telegram_id):
 
     cursor.execute(
         "UPDATE users SET balance = ?, last_billing_date = ? WHERE telegram_id = ?",
-        (new_balance, today.strftime("%Y-%m-%d"), telegram_id)
+        (new_balance, today.strftime("%Y-%m-%d"), telegram_id),
     )
 
     conn.commit()
